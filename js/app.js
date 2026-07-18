@@ -51,7 +51,9 @@
       var clean = {};
       Object.keys(data).forEach(function (id) {
         var qty = parseInt(data[id], 10);
-        if (qty > 0 && window.NOOR_PRODUCTS.some(function (p) { return p.id === id; })) {
+        // Accept any positive quantity; the id is validated against the live
+        // catalogue when rendering and again server-side at checkout.
+        if (qty > 0 && /^[a-z0-9-]+$/i.test(id)) {
           clean[id] = Math.min(qty, 99);
         }
       });
@@ -418,23 +420,32 @@
       return;
     }
 
-    payConfirm.classList.add("show");
-    cart = {};
-    anyBought = false;
-    saveCart();
-    document.querySelectorAll(".buy-btn[data-id]").forEach(function (b) { b.textContent = "Buy"; });
-    updateCartUI();
+    var customer = {
+      email: document.getElementById("f-email").value.trim(),
+      first_name: document.getElementById("f-firstname").value.trim(),
+      last_name: document.getElementById("f-lastname").value.trim(),
+      phone: document.getElementById("f-tel").value.trim(),
+      address: document.getElementById("f-address").value.trim(),
+      postal_code: document.getElementById("f-postal").value.trim(),
+      city: document.getElementById("f-city").value.trim(),
+      country: "BE"
+    };
 
-    document.getElementById("checkoutForm").reset();
-    fields.forEach(function (f) {
-      document.getElementById(f.id).classList.remove("invalid");
-      document.getElementById(f.err).textContent = "";
+    var original = payBtn.textContent;
+    payBtn.disabled = true;
+    payBtn.textContent = "Redirecting to payment…";
+
+    window.NOOR_STORE.checkout(cart, customer).then(function (data) {
+      // Success: hand off to Mollie's secure hosted checkout.
+      // The cart is intentionally NOT cleared here — it clears only once the
+      // order is confirmed paid (the customer may come back to retry).
+      window.location.href = data.checkoutUrl;
+    }).catch(function (err) {
+      payBtn.disabled = false;
+      payBtn.textContent = original;
+      var emailErr = document.getElementById("e-email");
+      emailErr.textContent = (err && err.message) ? err.message : "Payment could not be started. Please try again.";
     });
-
-    setTimeout(function () {
-      payConfirm.classList.remove("show");
-      closeDrawer();
-    }, 2600);
   });
 
   /* ================================================================
@@ -610,7 +621,23 @@
   }
 
   /* ---------- boot ---------- */
-  renderGrid();
+  // Load the live catalogue from Supabase (falls back to the bundled array while
+  // you're still setting up, so the page never renders empty).
   updateCartUI();
   route(); // honour a legal-page hash on load (e.g. link from an e-mail)
+
+  function startWithProducts(list) {
+    PRODUCTS = (list && list.length) ? list : (window.NOOR_PRODUCTS || []);
+    visibleCount = PAGE_SIZE;
+    renderGrid();
+    updateCartUI();
+  }
+
+  if (window.NOOR_STORE && typeof window.NOOR_STORE.loadProducts === "function") {
+    window.NOOR_STORE.loadProducts().then(startWithProducts).catch(function () {
+      startWithProducts(window.NOOR_PRODUCTS || []);
+    });
+  } else {
+    startWithProducts(window.NOOR_PRODUCTS || []);
+  }
 })();
