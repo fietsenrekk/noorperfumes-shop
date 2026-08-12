@@ -825,8 +825,8 @@ form.checkout-form{
 @media (max-width:720px){
   .site-header{padding:16px 16px;}
   .wrap{padding:0 16px;}
-  .product-grid{grid-template-columns:1fr;}
-  .product-block{padding:18px 14px 16px;}
+  .product-grid{grid-template-columns:1fr 1fr;}
+  .product-block{padding:18px 12px 14px;}
   form.checkout-form{grid-template-columns:1fr;}
   .header-frame-inner{padding:14px 18px;}
   .toolbar{padding:24px 0 16px;}
