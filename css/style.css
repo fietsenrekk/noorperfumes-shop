@@ -66,6 +66,13 @@ img,.ph{display:block;}
   font-style:normal;
   font-display:swap;
 }
+@font-face{
+  font-family:'Aileron';
+  src:url('../assets/fonts/Aileron-Bold.otf') format('opentype');
+  font-weight:700;
+  font-style:normal;
+  font-display:swap;
+}
 
 /* ---------- header (sticky, morphing Noor Perfumes <-> other brands) ---------- */
 .site-header{
@@ -205,6 +212,8 @@ img,.ph{display:block;}
   border-radius:0;
 }
 .search-field input::placeholder{
+  font-family:'Aileron', 'Archivo', sans-serif;
+  font-weight:700;
   color:var(--muted);
   text-transform:uppercase;
   font-size:11px;
@@ -633,7 +642,35 @@ img,.ph{display:block;}
   color:var(--muted);
   margin-top:3px;
 }
-.cart-row-right{display:flex; align-items:center; gap:20px;}
+.cart-row-right{display:flex; align-items:center; gap:16px;}
+
+/* subtle quantity stepper — sits between the product line and the price */
+.qty-stepper{
+  display:flex;
+  align-items:center;
+  gap:1px;
+  flex-shrink:0;
+}
+.qty-btn{
+  width:20px; height:20px;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent;
+  border:1px solid var(--hair);
+  color:var(--ink);
+  font-size:11px;
+  line-height:1;
+  padding:0;
+  transition:background 120ms ease-out, border-color 120ms ease-out, transform 80ms ease-out;
+}
+.qty-btn:hover{background:var(--paper-dim); border-color:var(--ink);}
+.qty-btn:active{transform:scale(0.92);}
+.qty-value{
+  min-width:22px;
+  text-align:center;
+  font-size:12px;
+  font-weight:400;
+  color:var(--ink);
+}
 .cart-row-price{font-size:13px; font-weight:400;}
 .trash-btn{
   width:32px; height:32px;
@@ -664,14 +701,16 @@ form.checkout-form{
   background:transparent;
   padding:15px 14px;
   font-size:13px;
-  font-weight:300;
-  font-family:'Archivo', sans-serif;
+  font-weight:700;
+  font-family:'Aileron', 'Archivo', sans-serif;
   color:var(--ink);
   outline:none;
   border-radius:0;
   transition:border-color 120ms ease-out, background 120ms ease-out;
 }
 .field input::placeholder{
+  font-family:'Aileron', 'Archivo', sans-serif;
+  font-weight:700;
   color:var(--muted);
   opacity:1;
   text-transform:uppercase;

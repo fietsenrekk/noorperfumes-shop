@@ -342,10 +342,15 @@
       row.className = "cart-row";
       row.innerHTML =
         "<div>" +
-          '<div class="cart-row-name">' + esc(p.name) + (qty > 1 ? " × " + qty : "") + "</div>" +
-          '<div class="cart-row-meta">' + esc(p.ml) + " — " + esc(p.notes) + "</div>" +
+          '<div class="cart-row-name">' + esc(p.name) + "</div>" +
+          '<div class="cart-row-meta">' + esc(p.ml) + " · " + esc(p.notes) + "</div>" +
         "</div>" +
         '<div class="cart-row-right">' +
+          '<div class="qty-stepper">' +
+            '<button type="button" class="qty-btn" data-qty-minus="' + id + '" aria-label="Decrease quantity of ' + esc(p.name) + '">−</button>' +
+            '<span class="qty-value" aria-live="polite">' + qty + "</span>" +
+            '<button type="button" class="qty-btn" data-qty-plus="' + id + '" aria-label="Increase quantity of ' + esc(p.name) + '">+</button>' +
+          "</div>" +
           '<span class="cart-row-price">' + fmt(p.price * qty) + "</span>" +
           '<button class="trash-btn" aria-label="Remove ' + esc(p.name) + '" data-remove="' + id + '">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
@@ -358,6 +363,22 @@
   }
 
   cartList.addEventListener("click", function (e) {
+    var minus = e.target.closest("[data-qty-minus]");
+    if (minus) {
+      var idMinus = minus.getAttribute("data-qty-minus");
+      if (cart[idMinus] > 1) { cart[idMinus] -= 1; } else { delete cart[idMinus]; }
+      saveCart();
+      updateCartUI();
+      return;
+    }
+    var plus = e.target.closest("[data-qty-plus]");
+    if (plus) {
+      var idPlus = plus.getAttribute("data-qty-plus");
+      cart[idPlus] = Math.min((cart[idPlus] || 0) + 1, 99);
+      saveCart();
+      updateCartUI();
+      return;
+    }
     var btn = e.target.closest("[data-remove]");
     if (!btn) return;
     delete cart[btn.getAttribute("data-remove")];
@@ -485,7 +506,7 @@
       title: "Store Information",
       html:
         '<p class="page-lede">This is the official website of NOOR PERFUMES. All products shown are available for purchase. ' +
-        "Our main website is under construction and should be live by the start of November — in the meanwhile, enjoy our perfumes. " +
+        "Our main website is under construction and should be live by the start of November. In the meanwhile, enjoy our perfumes. " +
         "Sincerely, the team of NOOR PERFUMES.</p>" +
         '<div class="registry-line">KvK: 1016832588 &middot; BTW: BE1016832588</div>' +
         "<h2>Contactgegevens</h2>" +
@@ -553,7 +574,7 @@
         "<li>Shipping costs (if any) are shown at checkout before you pay.</li>" +
         "<li>Every parcel is tracked; you receive the tracking link by e-mail.</li>" +
         "</ul>" +
-        "<h2>Returns &mdash; 14-day right of withdrawal</h2>" +
+        "<h2>14-Day Right of Withdrawal</h2>" +
         "<p>You may return your order within 14 days of receiving it, without giving a reason. Because perfume is a hygiene-sensitive product, returns are only accepted if the bottle is <strong>unopened and in its original sealed packaging</strong>.</p>" +
         "<p>To start a return:</p>" +
         "<ul>" +
@@ -562,7 +583,7 @@
         "<li>We refund the full purchase amount via your original payment method within 14 days of receiving the return.</li>" +
         "</ul>" +
         "<h2>Damaged or wrong item?</h2>" +
-        "<p>Contact us within 48 hours of delivery with a photo and we will send a replacement or a full refund &mdash; including return costs.</p>"
+        "<p>Contact us within 48 hours of delivery with a photo and we will send a replacement or a full refund, including return costs.</p>"
     },
 
     cookies: {
@@ -576,7 +597,7 @@
         "<li><strong>Fonts</strong>: the typeface is loaded from Google Fonts, which may log your IP address for delivery purposes. No cookies are set by this request.</li>" +
         "</ul>" +
         "<h2>What we don't use</h2>" +
-        "<p>No analytics, no advertising pixels, no social media trackers, no profiling. That is why you don't see a cookie banner here &mdash; there is nothing to consent to.</p>" +
+        "<p>No analytics, no advertising pixels, no social media trackers, no profiling. That is why you don't see a cookie banner here. There is nothing to consent to.</p>" +
         "<h2>Clearing the stored cart</h2>" +
         "<p>You can remove the stored cart at any time by clearing your browser's site data for this website.</p>"
     }
