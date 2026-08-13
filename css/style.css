@@ -17,7 +17,11 @@
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{
+  scroll-behavior:smooth;
+  overflow-x:clip;
+  width:100%;
+}
 body{
   background:var(--paper);
   color:var(--ink);
@@ -26,13 +30,17 @@ body{
   font-size:15px;
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  overflow-x:clip;
+  width:100%;
+  max-width:100%;
 }
 h1,h2,h3,.display{
   font-family:'Archivo', 'Helvetica Neue', Arial, sans-serif;
   font-weight:300;
   letter-spacing:0.06em;
   text-transform:uppercase;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 a{color:inherit;}
 button{font-family:inherit; cursor:pointer;}
@@ -64,31 +72,50 @@ img,.ph{display:block;}
   gap:16px;
   padding:14px 20px;
   min-height:64px;
+  position:relative;
 }
 .brand-morph{
   position:relative;
   margin:0;
   flex:1;
   min-width:0;
+  align-self:center;
+  transition:padding-right 200ms ease-out;
+}
+.header-row:has(.header-logo.is-visible) .brand-morph{
+  padding-right:132px;
 }
 .brand-title{
   display:block;
   font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-weight:400;
-  font-size:clamp(2.05rem, 7.4vw, 4.3rem);
-  line-height:0.95;
+  font-size:clamp(2.425rem, 8vw, 4.675rem);
+  line-height:1.05;
   letter-spacing:0.005em;
   text-transform:none;
   white-space:nowrap;
   color:var(--ink);
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .brand-alt{
   position:absolute;
-  left:0; top:0;
+  left:0; right:0;
+  top:50%;
+  transform:translateY(-50%);
   opacity:0;
   pointer-events:none;
+  font-size:clamp(2rem, 7vw, 4rem);
+  line-height:1.05;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .header-logo{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
   font-family:'Stardom', Georgia, serif;
   font-size:12px;
   letter-spacing:0.04em;
@@ -97,9 +124,17 @@ img,.ph{display:block;}
   padding:9px 14px;
   white-space:nowrap;
   opacity:0;
-  transition:opacity 200ms ease-out;
-  flex-shrink:0;
+  pointer-events:none;
+  transition:opacity 200ms ease-out, background 120ms ease-out;
+  background:var(--paper);
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
 }
+.header-logo.is-visible{
+  pointer-events:auto;
+}
+.header-logo:hover{background:var(--paper-dim);}
 
 /* ---------- toolbar (info / search / count) ---------- */
 .toolbar{
@@ -167,11 +202,12 @@ img,.ph{display:block;}
 }
 
 /* ---------- product grid (brutalist, edge-to-edge, black hairlines) ---------- */
-.grid-section{padding-bottom:0;}
+.grid-section{padding-bottom:0; max-width:100%; overflow-x:clip;}
 .product-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;          /* mobile: 2 across, to the edge */
+  grid-template-columns:repeat(2, minmax(0, 1fr));  /* minmax(0,1fr) keeps columns even */
   gap:1px;
+  width:100%;
   background:var(--ink);                    /* the gap shows as black hairlines */
   border-bottom:1px solid var(--ink);
 }
@@ -181,13 +217,16 @@ img,.ph{display:block;}
   display:block;
 }
 @media (min-width:900px){
-  .product-grid{grid-template-columns:repeat(4, 1fr);}  /* desktop: 4 across */
+  .product-grid{grid-template-columns:repeat(4, minmax(0, 1fr));}  /* desktop: 4 across */
 }
 .product-block{
   background:var(--paper);
   display:flex;
   flex-direction:column;
   padding:0;
+  min-width:0;
+  position:relative;
+  overflow:hidden;
 }
 
 /* --- photo (polaroid / editorial), fills the cell --- */
@@ -227,7 +266,7 @@ img,.ph{display:block;}
   pointer-events:none;
 }
 
-/* --- swipe-up info panel (fills the photo when the meta bar is clicked) --- */
+/* --- swipe-up info panel (covers the whole block when meta is clicked) --- */
 .info-swipe{
   position:absolute;
   inset:0;
@@ -240,18 +279,24 @@ img,.ph{display:block;}
   transform:translateY(100%);
   transition:transform 260ms cubic-bezier(.32,.72,0,1);
   overflow-y:auto;
-  z-index:3;
+  z-index:5;
+  -webkit-overflow-scrolling:touch;
 }
 .product-block.info-open .info-swipe{transform:translateY(0);}
+.product-block.info-open{z-index:4;}
+.product-block.info-open .product-meta{visibility:hidden;}
 .swipe-name{
-  font-family:'Stardom', Georgia, serif;
+  font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-size:clamp(1.3rem,2.4vw,1.9rem);
   line-height:1;
   margin-bottom:12px;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .swipe-notes{margin-bottom:12px;}
 .swipe-notes .note-line{
-  font-size:11px;
+  font-size:12px;
+  font-weight:500;
   letter-spacing:0.02em;
   color:var(--ink);
   line-height:1.75;
@@ -292,16 +337,18 @@ img,.ph{display:block;}
 }
 .meta-text{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start;}
 .meta-name{
-  font-family:'Stardom', Georgia, serif;
+  font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-size:clamp(1.05rem,1.7vw,1.5rem);
   line-height:1;
   letter-spacing:0.005em;
   text-transform:none;
   margin-bottom:7px;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .note-line{
-  font-size:11.5px;
-  font-weight:400;
+  font-size:12px;
+  font-weight:500;
   letter-spacing:0.005em;
   color:#57534a;
   line-height:1.65;
@@ -865,16 +912,19 @@ form.checkout-form{
 
 /* ---------- responsive ---------- */
 @media (max-width:720px){
-  .header-row{padding:12px 14px; min-height:54px;}
-  .product-grid{grid-template-columns:1fr 1fr;}
+  .header-row{padding:12px 14px; min-height:54px; align-items:center;}
+  .header-logo{right:14px;}
+  .header-row:has(.header-logo.is-visible) .brand-morph{padding-right:118px;}
   form.checkout-form{grid-template-columns:1fr;}
-  .toolbar{padding:12px 14px;}
-  .toolbar-count{order:2; width:auto;}
+  .toolbar{padding:12px 14px; gap:12px;}
+  .toolbar-right{min-width:0; flex:1 1 100%; gap:14px;}
+  .toolbar-count{order:2; width:auto; flex-shrink:0;}
+  .search-field{min-width:0; flex:1;}
   .site-footer{padding:36px 20px 32px;}
   .drawer-scroll{padding:0 18px 42px;}
   .page-topbar{padding:14px 16px;}
   .page-body{padding:38px 20px 70px;}
-  .product-meta{min-height:92px; padding:10px 10px 10px 12px;}
+  .product-meta{min-height:96px; padding:10px 10px 10px 12px;}
   .product-meta .order-btn{width:54px;}
   .pay-btn{width:100%; padding:18px 30px;}
 }

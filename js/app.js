@@ -202,13 +202,6 @@
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
-          '<div class="info-swipe" aria-hidden="true">' +
-            '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
-            '<div class="swipe-name">' + esc(p.name) + "</div>" +
-            '<div class="swipe-notes">' + noteLines + "</div>" +
-            '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
-            '<div class="swipe-price">' + fmt(p.price) + "</div>" +
-          "</div>" +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
           'aria-label="More about ' + esc(p.name) + '">' +
@@ -217,6 +210,13 @@
             noteLines +
           "</div>" +
           '<button class="order-btn" data-id="' + p.id + '">Order</button>' +
+        "</div>" +
+        '<div class="info-swipe" aria-hidden="true">' +
+          '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
+          '<div class="swipe-name">' + esc(p.name) + "</div>" +
+          '<div class="swipe-notes">' + noteLines + "</div>" +
+          '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
+          '<div class="swipe-price">' + fmt(p.price) + "</div>" +
         "</div>";
 
       grid.appendChild(block);
@@ -638,7 +638,10 @@
       m = m < 0 ? 0 : (m > 1 ? 1 : m);
       brandNoor.style.opacity = String(1 - m);
       brandAlt.style.opacity = String(m);
-      if (headerLogo) headerLogo.style.opacity = String(m);
+      if (headerLogo) {
+        headerLogo.style.opacity = String(m);
+        headerLogo.classList.toggle("is-visible", m >= 0.05);
+      }
     }
     function onScroll() {
       if (!ticking) { ticking = true; window.requestAnimationFrame(apply); }
@@ -647,6 +650,11 @@
     window.addEventListener("resize", onScroll);
     window.NOOR_HEADER_SYNC = apply; // re-run after the grid re-renders
     apply();
+    if (headerLogo) {
+      headerLogo.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
   })();
 
   /* ---------- boot ---------- */
