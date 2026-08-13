@@ -77,7 +77,7 @@
       <span class="brand-title brand-noor" id="brandNoor">Noor Perfumes</span>
       <span class="brand-title brand-alt" id="brandAlt" aria-hidden="true">other brands</span>
     </h1>
-    <div class="header-logo" id="headerLogo" aria-hidden="true">Noor Perfumes</div>
+    <button type="button" class="header-logo" id="headerLogo" aria-label="Back to top">Noor Perfumes</button>
   </div>
 </header>
 
@@ -153,31 +153,23 @@
 
     <form class="checkout-form" id="checkoutForm" novalidate>
       <div class="field full">
-        <input type="text" id="f-address" name="address" placeholder="Street and number" autocomplete="street-address">
+        <input type="text" id="f-address" name="address" placeholder="Street and number" autocomplete="street-address" required>
         <span class="field-error" id="e-address"></span>
       </div>
       <div class="field">
-        <input type="text" id="f-postal" name="postal" placeholder="Postal code" autocomplete="postal-code">
-        <span class="field-error" id="e-postal"></span>
+        <input type="text" id="f-postalcity" name="postalcity" placeholder="Postal code & City" autocomplete="address-level2" required>
+        <span class="field-error" id="e-postalcity"></span>
       </div>
       <div class="field">
-        <input type="text" id="f-city" name="city" placeholder="City" autocomplete="address-level2">
-        <span class="field-error" id="e-city"></span>
+        <input type="text" id="f-fullname" name="fullname" placeholder="First name & Last name" autocomplete="name" required>
+        <span class="field-error" id="e-fullname"></span>
       </div>
       <div class="field">
-        <input type="text" id="f-firstname" name="firstname" placeholder="First name" autocomplete="given-name">
-        <span class="field-error" id="e-firstname"></span>
-      </div>
-      <div class="field">
-        <input type="text" id="f-lastname" name="lastname" placeholder="Last name" autocomplete="family-name">
-        <span class="field-error" id="e-lastname"></span>
-      </div>
-      <div class="field">
-        <input type="tel" id="f-tel" name="tel" placeholder="Phone" autocomplete="tel">
+        <input type="tel" id="f-tel" name="tel" placeholder="Phone" autocomplete="tel" required>
         <span class="field-error" id="e-tel"></span>
       </div>
       <div class="field">
-        <input type="email" id="f-email" name="email" placeholder="Email" autocomplete="email">
+        <input type="email" id="f-email" name="email" placeholder="Email" autocomplete="email" required>
         <span class="field-error" id="e-email"></span>
       </div>
     </form>

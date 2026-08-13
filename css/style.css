@@ -17,7 +17,11 @@
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{
+  scroll-behavior:smooth;
+  overflow-x:clip;
+  width:100%;
+}
 body{
   background:var(--paper);
   color:var(--ink);
@@ -26,13 +30,17 @@ body{
   font-size:15px;
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  overflow-x:clip;
+  width:100%;
+  max-width:100%;
 }
 h1,h2,h3,.display{
   font-family:'Archivo', 'Helvetica Neue', Arial, sans-serif;
   font-weight:300;
   letter-spacing:0.06em;
   text-transform:uppercase;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 a{color:inherit;}
 button{font-family:inherit; cursor:pointer;}
@@ -51,6 +59,14 @@ img,.ph{display:block;}
   font-display:swap;
 }
 
+@font-face{
+  font-family:'Aileron';
+  src:url('../assets/fonts/Aileron-Regular.otf') format('opentype');
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
+
 /* ---------- header (sticky, morphing Noor Perfumes <-> other brands) ---------- */
 .site-header{
   position:sticky; top:0; z-index:80;
@@ -64,31 +80,50 @@ img,.ph{display:block;}
   gap:16px;
   padding:14px 20px;
   min-height:64px;
+  position:relative;
 }
 .brand-morph{
   position:relative;
   margin:0;
   flex:1;
   min-width:0;
+  align-self:center;
+  transition:padding-right 200ms ease-out;
+}
+.header-row:has(.header-logo.is-visible) .brand-morph{
+  padding-right:132px;
 }
 .brand-title{
   display:block;
   font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-weight:400;
-  font-size:clamp(2.05rem, 7.4vw, 4.3rem);
-  line-height:0.95;
+  font-size:clamp(2.425rem, 8vw, 4.675rem);
+  line-height:1.05;
   letter-spacing:0.005em;
   text-transform:none;
   white-space:nowrap;
   color:var(--ink);
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .brand-alt{
   position:absolute;
-  left:0; top:0;
+  left:0; right:0;
+  top:50%;
+  transform:translateY(-50%);
   opacity:0;
   pointer-events:none;
+  font-size:clamp(2rem, 7vw, 4rem);
+  line-height:1.05;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .header-logo{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
   font-family:'Stardom', Georgia, serif;
   font-size:12px;
   letter-spacing:0.04em;
@@ -97,9 +132,17 @@ img,.ph{display:block;}
   padding:9px 14px;
   white-space:nowrap;
   opacity:0;
-  transition:opacity 200ms ease-out;
-  flex-shrink:0;
+  pointer-events:none;
+  transition:opacity 200ms ease-out, background 120ms ease-out;
+  background:var(--paper);
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
 }
+.header-logo.is-visible{
+  pointer-events:auto;
+}
+.header-logo:hover{background:var(--paper-dim);}
 
 /* ---------- toolbar (info / search / count) ---------- */
 .toolbar{
@@ -123,7 +166,7 @@ img,.ph{display:block;}
   width:26px; height:26px;
   border:1px solid var(--ink);
   border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
+  display:none !important;
   font-family:'Archivo',sans-serif;
   font-weight:400;
   font-size:12px;
@@ -141,6 +184,7 @@ img,.ph{display:block;}
   text-transform:uppercase;
   color:var(--muted);
   white-space:nowrap;
+  display:none !important;
 }
 .search-field{
   flex:0 1 340px;
@@ -152,8 +196,9 @@ img,.ph{display:block;}
   border-bottom:1px solid var(--ink);
   background:transparent;
   padding:8px 2px;
+  font-family:'Aileron', 'Archivo', sans-serif;
   font-size:13px;
-  font-weight:300;
+  font-weight:400;
   letter-spacing:0.04em;
   color:var(--ink);
   outline:none;
@@ -167,12 +212,17 @@ img,.ph{display:block;}
 }
 
 /* ---------- product grid (brutalist, edge-to-edge, black hairlines) ---------- */
-.grid-section{padding-bottom:0;}
+.grid-section{padding-bottom:0; max-width:100%; overflow-x:clip;}
 .product-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;          /* mobile: 2 across, to the edge */
-  gap:1px;
-  background:var(--ink);                    /* the gap shows as black hairlines */
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:1px;                 /* uniform column+row gap: every hairline (center or
+                               side) is rendered the exact same way, so they are
+                               always the exact same thickness — no per-cell
+                               borders, which round to different sub-pixel
+                               widths depending on column position. */
+  width:100%;
+  background:var(--ink);
   border-bottom:1px solid var(--ink);
 }
 .product-grid.grid-empty{
@@ -181,13 +231,16 @@ img,.ph{display:block;}
   display:block;
 }
 @media (min-width:900px){
-  .product-grid{grid-template-columns:repeat(4, 1fr);}  /* desktop: 4 across */
+  .product-grid{grid-template-columns:repeat(4, minmax(0, 1fr));}
 }
 .product-block{
   background:var(--paper);
   display:flex;
   flex-direction:column;
   padding:0;
+  min-width:0;
+  position:relative;
+  overflow:hidden;
 }
 
 /* --- photo (polaroid / editorial), fills the cell --- */
@@ -206,6 +259,22 @@ img,.ph{display:block;}
   position:absolute;
   inset:0;
   display:block;
+  transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1); /* smooth, unhurried — a scent settling in, not a snap */
+}
+/* Desktop/mouse: hover zooms. Scale reduced 30% from the previous 1.55 (extra zoom 0.55 -> 0.385). */
+@media (hover: hover) and (pointer: fine) {
+  .product-block:hover .product-photo img {
+    transform: scale(1.385);
+  }
+}
+/* Touch (phones AND tablets/iPads): tap toggles an explicit class instead of
+   relying on :active, which can get stuck zoomed-in on touch browsers.
+   Tapping the same photo again removes the class and it eases back down. */
+.product-photo.is-zoomed img {
+  transform: scale(1.55);
+}
+.product-block.info-open .product-photo img {
+  transform: scale(1) !important;
 }
 .product-photo .ph-mark{
   position:absolute;
@@ -227,7 +296,7 @@ img,.ph{display:block;}
   pointer-events:none;
 }
 
-/* --- swipe-up info panel (fills the photo when the meta bar is clicked) --- */
+/* --- swipe-up info panel (covers the whole block when meta is clicked) --- */
 .info-swipe{
   position:absolute;
   inset:0;
@@ -240,18 +309,24 @@ img,.ph{display:block;}
   transform:translateY(100%);
   transition:transform 260ms cubic-bezier(.32,.72,0,1);
   overflow-y:auto;
-  z-index:3;
+  z-index:5;
+  -webkit-overflow-scrolling:touch;
 }
 .product-block.info-open .info-swipe{transform:translateY(0);}
+.product-block.info-open{z-index:4;}
+.product-block.info-open .product-meta{visibility:hidden;}
 .swipe-name{
-  font-family:'Stardom', Georgia, serif;
+  font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-size:clamp(1.3rem,2.4vw,1.9rem);
   line-height:1;
   margin-bottom:12px;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .swipe-notes{margin-bottom:12px;}
 .swipe-notes .note-line{
-  font-size:11px;
+  font-size:12px;
+  font-weight:500;
   letter-spacing:0.02em;
   color:var(--ink);
   line-height:1.75;
@@ -283,6 +358,7 @@ img,.ph{display:block;}
 /* --- meta bar (name + note pyramid + order) --- */
 .product-meta{
   display:flex;
+  flex:1;
   align-items:stretch;
   justify-content:space-between;
   gap:10px;
@@ -291,17 +367,20 @@ img,.ph{display:block;}
   min-height:98px;
 }
 .meta-text{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start;}
+.meta-notes{margin-top:auto;}
 .meta-name{
-  font-family:'Stardom', Georgia, serif;
+  font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-size:clamp(1.05rem,1.7vw,1.5rem);
   line-height:1;
   letter-spacing:0.005em;
   text-transform:none;
   margin-bottom:7px;
+  -webkit-text-stroke:0.45px currentColor;
+  paint-order:stroke fill;
 }
 .note-line{
-  font-size:11.5px;
-  font-weight:400;
+  font-size:12px;
+  font-weight:500;
   letter-spacing:0.005em;
   color:#57534a;
   line-height:1.65;
@@ -311,8 +390,12 @@ img,.ph{display:block;}
 }
 .product-meta .order-btn{
   flex-shrink:0;
-  align-self:stretch;
+  align-self:center;
   width:64px;
+  aspect-ratio:1/1;      /* height always == width, however the flex row resizes it */
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background:var(--ink);
   color:var(--paper);
   border:none;
@@ -322,7 +405,7 @@ img,.ph{display:block;}
   letter-spacing:0.16em;
   text-transform:uppercase;
   cursor:pointer;
-  transition:opacity 120ms ease-out, transform 80ms ease-out;
+  transition:opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .product-meta .order-btn:hover{opacity:0.82;}
 .product-meta .order-btn:active{transform:scale(0.97);}
@@ -440,7 +523,7 @@ img,.ph{display:block;}
   color:var(--paper);
   border:var(--line-thick) solid var(--ink);
   border-radius:999px;
-  padding:15px 64px 15px 26px;
+  padding:15px 26px;
   font-family:'Archivo',sans-serif;
   font-weight:400;
   letter-spacing:0.16em;
@@ -457,9 +540,9 @@ img,.ph{display:block;}
   position:absolute;
   right:14px; top:50%;
   transform:translateY(-50%);
-  background:var(--paper);
-  color:#C81E1E;
-  border:2px solid #C81E1E;
+  background:transparent;
+  color:#FFFFFF;
+  border:none;
   min-width:28px; height:28px;
   border-radius:999px;
   display:inline-flex; align-items:center; justify-content:center;
@@ -865,16 +948,19 @@ form.checkout-form{
 
 /* ---------- responsive ---------- */
 @media (max-width:720px){
-  .header-row{padding:12px 14px; min-height:54px;}
-  .product-grid{grid-template-columns:1fr 1fr;}
+  .header-row{padding:12px 14px; min-height:54px; align-items:center;}
+  .header-logo{right:14px;}
+  .header-row:has(.header-logo.is-visible) .brand-morph{padding-right:118px;}
   form.checkout-form{grid-template-columns:1fr;}
-  .toolbar{padding:12px 14px;}
-  .toolbar-count{order:2; width:auto;}
+  .toolbar{padding:12px 14px; gap:12px;}
+  .toolbar-right{min-width:0; flex:1 1 100%; gap:14px;}
+  .toolbar-count{order:2; width:auto; flex-shrink:0;}
+  .search-field{min-width:0; flex:1;}
   .site-footer{padding:36px 20px 32px;}
   .drawer-scroll{padding:0 18px 42px;}
   .page-topbar{padding:14px 16px;}
   .page-body{padding:38px 20px 70px;}
-  .product-meta{min-height:92px; padding:10px 10px 10px 12px;}
+  .product-meta{min-height:96px; padding:10px 10px 10px 12px;}
   .product-meta .order-btn{width:54px;}
   .pay-btn{width:100%; padding:18px 30px;}
 }

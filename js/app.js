@@ -194,29 +194,34 @@
         : '<span class="ph-mark">' + esc(p.initial) + "</span>";
       var photoClass = p.photo ? "product-photo has-photo" : "product-photo";
 
-      var noteLines =
+      var fullNoteLines =
         '<div class="note-line">topnotes: ' + esc(py.top) + "</div>" +
         '<div class="note-line">heartnotes: ' + esc(py.heart) + "</div>" +
         '<div class="note-line">basenotes: ' + esc(py.base) + "</div>";
+        
+      var shortNoteLines =
+        '<div class="note-line">&bull; ' + esc(py.top) + "</div>" +
+        '<div class="note-line">&bull; ' + esc(py.heart) + "</div>" +
+        '<div class="note-line">&bull; ' + esc(py.base) + "</div>";
 
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
-          '<div class="info-swipe" aria-hidden="true">' +
-            '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
-            '<div class="swipe-name">' + esc(p.name) + "</div>" +
-            '<div class="swipe-notes">' + noteLines + "</div>" +
-            '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
-            '<div class="swipe-price">' + fmt(p.price) + "</div>" +
-          "</div>" +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
           'aria-label="More about ' + esc(p.name) + '">' +
           '<div class="meta-text">' +
             '<div class="meta-name">' + esc(p.name) + "</div>" +
-            noteLines +
+            '<div class="meta-notes">' + shortNoteLines + "</div>" +
           "</div>" +
           '<button class="order-btn" data-id="' + p.id + '">Order</button>' +
+        "</div>" +
+        '<div class="info-swipe" aria-hidden="true">' +
+          '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
+          '<div class="swipe-name">' + esc(p.name) + "</div>" +
+          '<div class="swipe-notes">' + fullNoteLines + "</div>" +
+          '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
+          '<div class="swipe-price">' + fmt(p.price) + "</div>" +
         "</div>";
 
       grid.appendChild(block);
@@ -243,6 +248,26 @@
       toggleInfo(meta.closest(".product-block"));
     }
   });
+
+  /* ---------- touch photo zoom (phones AND tablets/iPads) ----------
+     Desktop uses CSS :hover to zoom. Touch devices have no hover, so a tap
+     toggles an explicit class instead — this also fixes the old bug where a
+     zoom driven by :active could stay "stuck" zoomed in on some mobile
+     browsers. Tapping the same (already zoomed) photo again eases it back
+     down to its normal size. */
+  var isTouchDevice = window.matchMedia &&
+    (window.matchMedia("(hover: none)").matches || window.matchMedia("(pointer: coarse)").matches);
+  if (isTouchDevice) {
+    grid.addEventListener("click", function (e) {
+      var photo = e.target.closest(".product-photo");
+      if (!photo) return;
+      var wasZoomed = photo.classList.contains("is-zoomed");
+      grid.querySelectorAll(".product-photo.is-zoomed").forEach(function (p) {
+        if (p !== photo) p.classList.remove("is-zoomed");
+      });
+      photo.classList.toggle("is-zoomed", !wasZoomed);
+    });
+  }
 
   function setInfo(block, open) {
     if (!block) return;
@@ -359,10 +384,8 @@
   /* ---------- checkout form validation ---------- */
   var fields = [
     { id: "f-address", err: "e-address", label: "street and number" },
-    { id: "f-postal", err: "e-postal", label: "postal code" },
-    { id: "f-city", err: "e-city", label: "city" },
-    { id: "f-firstname", err: "e-firstname", label: "first name" },
-    { id: "f-lastname", err: "e-lastname", label: "last name" },
+    { id: "f-postalcity", err: "e-postalcity", label: "postal code & city" },
+    { id: "f-fullname", err: "e-fullname", label: "full name" },
     { id: "f-tel", err: "e-tel", label: "phone number" },
     { id: "f-email", err: "e-email", label: "email address" }
   ];
@@ -379,8 +402,6 @@
       msg = "Please enter a valid email address.";
     } else if (f.id === "f-tel" && !/^[0-9+()\-\s]{6,}$/.test(val)) {
       msg = "Please enter a valid phone number.";
-    } else if (f.id === "f-postal" && !/^[A-Za-z0-9\- ]{4,10}$/.test(val)) {
-      msg = "Please enter a valid postal code.";
     }
 
     if (msg) {
@@ -417,14 +438,17 @@
       return;
     }
 
+    var nameParts = document.getElementById("f-fullname").value.trim().split(" ");
+    var postalParts = document.getElementById("f-postalcity").value.trim().split(" ");
+
     var customer = {
       email: document.getElementById("f-email").value.trim(),
-      first_name: document.getElementById("f-firstname").value.trim(),
-      last_name: document.getElementById("f-lastname").value.trim(),
+      first_name: nameParts[0],
+      last_name: nameParts.slice(1).join(" ") || " ",
       phone: document.getElementById("f-tel").value.trim(),
       address: document.getElementById("f-address").value.trim(),
-      postal_code: document.getElementById("f-postal").value.trim(),
-      city: document.getElementById("f-city").value.trim(),
+      postal_code: postalParts[0],
+      city: postalParts.slice(1).join(" ") || " ",
       country: "BE"
     };
 
@@ -638,7 +662,10 @@
       m = m < 0 ? 0 : (m > 1 ? 1 : m);
       brandNoor.style.opacity = String(1 - m);
       brandAlt.style.opacity = String(m);
-      if (headerLogo) headerLogo.style.opacity = String(m);
+      if (headerLogo) {
+        headerLogo.style.opacity = String(m);
+        headerLogo.classList.toggle("is-visible", m >= 0.05);
+      }
     }
     function onScroll() {
       if (!ticking) { ticking = true; window.requestAnimationFrame(apply); }
@@ -647,6 +674,11 @@
     window.addEventListener("resize", onScroll);
     window.NOOR_HEADER_SYNC = apply; // re-run after the grid re-renders
     apply();
+    if (headerLogo) {
+      headerLogo.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
   })();
 
   /* ---------- boot ---------- */
