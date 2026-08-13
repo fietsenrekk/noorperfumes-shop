@@ -249,6 +249,26 @@
     }
   });
 
+  /* ---------- touch photo zoom (phones AND tablets/iPads) ----------
+     Desktop uses CSS :hover to zoom. Touch devices have no hover, so a tap
+     toggles an explicit class instead — this also fixes the old bug where a
+     zoom driven by :active could stay "stuck" zoomed in on some mobile
+     browsers. Tapping the same (already zoomed) photo again eases it back
+     down to its normal size. */
+  var isTouchDevice = window.matchMedia &&
+    (window.matchMedia("(hover: none)").matches || window.matchMedia("(pointer: coarse)").matches);
+  if (isTouchDevice) {
+    grid.addEventListener("click", function (e) {
+      var photo = e.target.closest(".product-photo");
+      if (!photo) return;
+      var wasZoomed = photo.classList.contains("is-zoomed");
+      grid.querySelectorAll(".product-photo.is-zoomed").forEach(function (p) {
+        if (p !== photo) p.classList.remove("is-zoomed");
+      });
+      photo.classList.toggle("is-zoomed", !wasZoomed);
+    });
+  }
+
   function setInfo(block, open) {
     if (!block) return;
     var meta = block.querySelector(".product-meta");

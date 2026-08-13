@@ -59,6 +59,14 @@ img,.ph{display:block;}
   font-display:swap;
 }
 
+@font-face{
+  font-family:'Aileron';
+  src:url('../assets/fonts/Aileron-Regular.otf') format('opentype');
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
+
 /* ---------- header (sticky, morphing Noor Perfumes <-> other brands) ---------- */
 .site-header{
   position:sticky; top:0; z-index:80;
@@ -188,8 +196,9 @@ img,.ph{display:block;}
   border-bottom:1px solid var(--ink);
   background:transparent;
   padding:8px 2px;
+  font-family:'Aileron', 'Archivo', sans-serif;
   font-size:13px;
-  font-weight:300;
+  font-weight:400;
   letter-spacing:0.04em;
   color:var(--ink);
   outline:none;
@@ -206,10 +215,14 @@ img,.ph{display:block;}
 .grid-section{padding-bottom:0; max-width:100%; overflow-x:clip;}
 .product-grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));  /* minmax(0,1fr) keeps columns even */
-  gap:1px;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:1px;                 /* uniform column+row gap: every hairline (center or
+                               side) is rendered the exact same way, so they are
+                               always the exact same thickness — no per-cell
+                               borders, which round to different sub-pixel
+                               widths depending on column position. */
   width:100%;
-  background:var(--ink);                    /* the gap shows as black hairlines */
+  background:var(--ink);
   border-bottom:1px solid var(--ink);
 }
 .product-grid.grid-empty{
@@ -218,7 +231,7 @@ img,.ph{display:block;}
   display:block;
 }
 @media (min-width:900px){
-  .product-grid{grid-template-columns:repeat(4, minmax(0, 1fr));}  /* desktop: 4 across */
+  .product-grid{grid-template-columns:repeat(4, minmax(0, 1fr));}
 }
 .product-block{
   background:var(--paper);
@@ -246,15 +259,19 @@ img,.ph{display:block;}
   position:absolute;
   inset:0;
   display:block;
-  transition: transform 0.35s ease-in-out;
+  transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1); /* smooth, unhurried — a scent settling in, not a snap */
 }
-@media (hover: hover) {
+/* Desktop/mouse: hover zooms. Scale reduced 30% from the previous 1.55 (extra zoom 0.55 -> 0.385). */
+@media (hover: hover) and (pointer: fine) {
   .product-block:hover .product-photo img {
-    transform: scale(1.85);
+    transform: scale(1.385);
   }
 }
-.product-block:active .product-photo img {
-  transform: scale(1.85);
+/* Touch (phones AND tablets/iPads): tap toggles an explicit class instead of
+   relying on :active, which can get stuck zoomed-in on touch browsers.
+   Tapping the same photo again removes the class and it eases back down. */
+.product-photo.is-zoomed img {
+  transform: scale(1.55);
 }
 .product-block.info-open .product-photo img {
   transform: scale(1) !important;
@@ -375,7 +392,7 @@ img,.ph{display:block;}
   flex-shrink:0;
   align-self:center;
   width:64px;
-  height:64px;
+  aspect-ratio:1/1;      /* height always == width, however the flex row resizes it */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -388,7 +405,7 @@ img,.ph{display:block;}
   letter-spacing:0.16em;
   text-transform:uppercase;
   cursor:pointer;
-  transition:opacity 120ms ease-out, transform 80ms ease-out;
+  transition:opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .product-meta .order-btn:hover{opacity:0.82;}
 .product-meta .order-btn:active{transform:scale(0.97);}
@@ -399,7 +416,7 @@ img,.ph{display:block;}
 }
 @media (min-width:900px){
   .product-meta{min-height:108px;}
-  .product-meta .order-btn{width:72px; height:72px;}
+  .product-meta .order-btn{width:72px;}
 }
 
 /* quote block */
@@ -944,7 +961,7 @@ form.checkout-form{
   .page-topbar{padding:14px 16px;}
   .page-body{padding:38px 20px 70px;}
   .product-meta{min-height:96px; padding:10px 10px 10px 12px;}
-  .product-meta .order-btn{width:54px; height:54px;}
+  .product-meta .order-btn{width:54px;}
   .pay-btn{width:100%; padding:18px 30px;}
 }
 /* focus visibility */
