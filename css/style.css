@@ -246,7 +246,7 @@ img,.ph{display:block;}
   position:absolute;
   inset:0;
   display:block;
-  transition: transform 0.4s ease-out;
+  transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
 }
 .product-block:hover .product-photo img,
 .product-block:active .product-photo img {
@@ -938,7 +938,7 @@ form.checkout-form{
   .page-topbar{padding:14px 16px;}
   .page-body{padding:38px 20px 70px;}
   .product-meta{min-height:96px; padding:10px 10px 10px 12px;}
-  .product-meta .order-btn{width:54px;}
+  .product-meta .order-btn{width:54px; height:54px;}
   .pay-btn{width:100%; padding:18px 30px;}
 }
 /* focus visibility */
