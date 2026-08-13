@@ -248,7 +248,11 @@ img,.ph{display:block;}
   display:block;
   transition: transform 0.35s ease-in-out;
 }
-.product-block:hover .product-photo img,
+@media (hover: hover) {
+  .product-block:hover .product-photo img {
+    transform: scale(1.85);
+  }
+}
 .product-block:active .product-photo img {
   transform: scale(1.85);
 }
