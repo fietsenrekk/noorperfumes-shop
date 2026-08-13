@@ -51,7 +51,9 @@
       var clean = {};
       Object.keys(data).forEach(function (id) {
         var qty = parseInt(data[id], 10);
-        if (qty > 0 && window.NOOR_PRODUCTS.some(function (p) { return p.id === id; })) {
+        // Accept any positive quantity; the id is validated against the live
+        // catalogue when rendering and again server-side at checkout.
+        if (qty > 0 && /^[a-z0-9-]+$/i.test(id)) {
           clean[id] = Math.min(qty, 99);
         }
       });
@@ -140,8 +142,18 @@
     });
   }
 
-  function notesPretty(notes) {
-    return notes.split(",").map(function (s) { return s.trim(); }).join(" · ");
+  // Split the 3-part note string into a top / heart / base pyramid, lowercased.
+  function notePyramid(notes) {
+    var parts = String(notes || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    return {
+      top: parts[0] || "",
+      heart: parts[1] || parts[0] || "",
+      base: parts[2] || parts[parts.length - 1] || ""
+    };
+  }
+  // Remove em/en dashes from body copy (client wants none in the text).
+  function cleanText(s) {
+    return String(s || "").replace(/\s*[—–]\s*/g, ", ").replace(/\s+,/g, ",");
   }
 
   function renderGrid() {
@@ -171,86 +183,80 @@
 
     var toShow = filtered.slice(0, visibleCount);
 
-    toShow.forEach(function (p, idx) {
+    toShow.forEach(function (p) {
       var block = document.createElement("div");
       block.className = "product-block";
+      block.setAttribute("data-id", p.id);
 
+      var py = notePyramid(p.notes);
       var photoInner = p.photo
-        ? '<img src="' + p.photo + '" alt="' + esc(p.name) + ' — extrait de parfum" loading="lazy">'
+        ? '<img src="' + p.photo + '" alt="' + esc(p.name) + '" loading="lazy">'
         : '<span class="ph-mark">' + esc(p.initial) + "</span>";
       var photoClass = p.photo ? "product-photo has-photo" : "product-photo";
 
+      var noteLines =
+        '<div class="note-line">topnotes: ' + esc(py.top) + "</div>" +
+        '<div class="note-line">heartnotes: ' + esc(py.heart) + "</div>" +
+        '<div class="note-line">basenotes: ' + esc(py.base) + "</div>";
+
       block.innerHTML =
-        '<div class="' + photoClass + '" tabindex="0" role="button" aria-expanded="false" ' +
-          'aria-label="Notes and facts about ' + esc(p.name) + '" data-panel="' + p.id + '">' +
+        '<div class="' + photoClass + '">' +
           photoInner +
-          '<div class="photo-panel" aria-hidden="true">' +
-            '<div class="panel-kicker">Inside this perfume</div>' +
-            '<div class="panel-notes">' + esc(notesPretty(p.notes)) + "</div>" +
-            '<p class="panel-fact">' + esc(p.fact) + "</p>" +
+          '<div class="info-swipe" aria-hidden="true">' +
+            '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
+            '<div class="swipe-name">' + esc(p.name) + "</div>" +
+            '<div class="swipe-notes">' + noteLines + "</div>" +
+            '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
+            '<div class="swipe-price">' + fmt(p.price) + "</div>" +
           "</div>" +
         "</div>" +
-        '<div class="product-info">' +
-          '<div class="product-title">' + esc(p.name) + "</div>" +
-          '<div class="product-sub">' + esc(p.ml) + " — " + esc(p.notes) + "</div>" +
-          '<div class="product-price">' + fmt(p.price) + "</div>" +
-        "</div>" +
-        '<div class="product-bar">' +
-          '<button class="buy-btn" data-id="' + p.id + '">' + (anyBought ? "Buy this too" : "Buy") + "</button>" +
+        '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
+          'aria-label="More about ' + esc(p.name) + '">' +
+          '<div class="meta-text">' +
+            '<div class="meta-name">' + esc(p.name) + "</div>" +
+            noteLines +
+          "</div>" +
+          '<button class="order-btn" data-id="' + p.id + '">Order</button>' +
         "</div>";
 
       grid.appendChild(block);
-
-      if (!filterText && idx === 6) {
-        var quote = document.createElement("div");
-        quote.className = "product-block";
-        quote.style.padding = "0";
-        quote.innerHTML =
-          '<div class="quote-block">' +
-            '<div class="quote-inner">' +
-              '<div class="quote-cap"></div>' +
-              '<div class="quote-lines">' +
-                '<svg viewBox="0 0 56 14"><path d="M0 7 C7 0, 14 14, 21 7 S35 0, 42 7 S53 14, 56 7" stroke="#B08D57" stroke-width="1.2" fill="none"/></svg>' +
-              "</div>" +
-              '<div class="quote-text">"Scent is the only architecture you cannot see, yet never forget."</div>' +
-              '<div class="quote-sig">— Noor, Founder</div>' +
-            "</div>" +
-          "</div>";
-        grid.appendChild(quote);
-      }
     });
 
     loadMoreWrap.style.display = (visibleCount < filtered.length) ? "flex" : "none";
+    if (window.NOOR_HEADER_SYNC) window.NOOR_HEADER_SYNC();
   }
 
   /* one delegated listener instead of per-render bindings */
   grid.addEventListener("click", function (e) {
-    var buy = e.target.closest(".buy-btn[data-id]");
-    if (buy) { handleBuy(buy); return; }
-    var photo = e.target.closest(".product-photo[data-panel]");
-    if (photo) togglePanel(photo);
+    var order = e.target.closest(".order-btn[data-id]");
+    if (order) { e.stopPropagation(); handleBuy(order); return; }
+    var close = e.target.closest(".swipe-close");
+    if (close) { setInfo(close.closest(".product-block"), false); return; }
+    var meta = e.target.closest(".product-meta");
+    if (meta) { toggleInfo(meta.closest(".product-block")); }
   });
   grid.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" && e.key !== " ") return;
-    var photo = e.target.closest(".product-photo[data-panel]");
-    if (photo) {
+    var meta = e.target.closest(".product-meta");
+    if (meta) {
       e.preventDefault();
-      togglePanel(photo);
+      toggleInfo(meta.closest(".product-block"));
     }
   });
 
-  function togglePanel(photo) {
-    var isOpen = photo.classList.contains("panel-open");
-    grid.querySelectorAll(".product-photo.panel-open").forEach(function (el) {
-      el.classList.remove("panel-open");
-      el.setAttribute("aria-expanded", "false");
-      el.querySelector(".photo-panel").setAttribute("aria-hidden", "true");
-    });
-    if (!isOpen) {
-      photo.classList.add("panel-open");
-      photo.setAttribute("aria-expanded", "true");
-      photo.querySelector(".photo-panel").setAttribute("aria-hidden", "false");
-    }
+  function setInfo(block, open) {
+    if (!block) return;
+    var meta = block.querySelector(".product-meta");
+    var panel = block.querySelector(".info-swipe");
+    block.classList.toggle("info-open", open);
+    if (meta) meta.setAttribute("aria-expanded", open ? "true" : "false");
+    if (panel) panel.setAttribute("aria-hidden", open ? "false" : "true");
+  }
+  function toggleInfo(block) {
+    if (!block) return;
+    var willOpen = !block.classList.contains("info-open");
+    grid.querySelectorAll(".product-block.info-open").forEach(function (b) { setInfo(b, false); });
+    if (willOpen) setInfo(block, true);
   }
 
   function handleBuy(btn) {
@@ -260,13 +266,6 @@
     btn.classList.remove("flash");
     void btn.offsetWidth;
     btn.classList.add("flash");
-
-    if (!anyBought) {
-      anyBought = true;
-      document.querySelectorAll(".buy-btn[data-id]").forEach(function (b) {
-        b.textContent = "Buy this too";
-      });
-    }
 
     saveCart();
     updateCartUI();
@@ -418,23 +417,32 @@
       return;
     }
 
-    payConfirm.classList.add("show");
-    cart = {};
-    anyBought = false;
-    saveCart();
-    document.querySelectorAll(".buy-btn[data-id]").forEach(function (b) { b.textContent = "Buy"; });
-    updateCartUI();
+    var customer = {
+      email: document.getElementById("f-email").value.trim(),
+      first_name: document.getElementById("f-firstname").value.trim(),
+      last_name: document.getElementById("f-lastname").value.trim(),
+      phone: document.getElementById("f-tel").value.trim(),
+      address: document.getElementById("f-address").value.trim(),
+      postal_code: document.getElementById("f-postal").value.trim(),
+      city: document.getElementById("f-city").value.trim(),
+      country: "BE"
+    };
 
-    document.getElementById("checkoutForm").reset();
-    fields.forEach(function (f) {
-      document.getElementById(f.id).classList.remove("invalid");
-      document.getElementById(f.err).textContent = "";
+    var original = payBtn.textContent;
+    payBtn.disabled = true;
+    payBtn.textContent = "Redirecting to payment…";
+
+    window.NOOR_STORE.checkout(cart, customer).then(function (data) {
+      // Success: hand off to Mollie's secure hosted checkout.
+      // The cart is intentionally NOT cleared here — it clears only once the
+      // order is confirmed paid (the customer may come back to retry).
+      window.location.href = data.checkoutUrl;
+    }).catch(function (err) {
+      payBtn.disabled = false;
+      payBtn.textContent = original;
+      var emailErr = document.getElementById("e-email");
+      emailErr.textContent = (err && err.message) ? err.message : "Payment could not be started. Please try again.";
     });
-
-    setTimeout(function () {
-      payConfirm.classList.remove("show");
-      closeDrawer();
-    }, 2600);
   });
 
   /* ================================================================
@@ -603,14 +611,57 @@
     }
   });
   function togglePanelEscape() {
-    grid.querySelectorAll(".product-photo.panel-open").forEach(function (el) {
-      el.classList.remove("panel-open");
-      el.setAttribute("aria-expanded", "false");
-    });
+    grid.querySelectorAll(".product-block.info-open").forEach(function (b) { setInfo(b, false); });
   }
 
+  /* ---------- header morph: Noor Perfumes -> other brands on scroll ---------- */
+  (function headerMorph() {
+    var header = document.getElementById("siteHeader");
+    var brandNoor = document.getElementById("brandNoor");
+    var brandAlt = document.getElementById("brandAlt");
+    var headerLogo = document.getElementById("headerLogo");
+    if (!header || !brandNoor || !brandAlt) return;
+    var FADE = 280; // px over which the crossfade happens
+    var ticking = false;
+    function apply() {
+      ticking = false;
+      var hb = header.getBoundingClientRect().bottom;
+      var gb = grid.getBoundingClientRect().bottom;
+      // m: 0 while scrolling through Noor products, -> 1 as the grid bottom
+      // rises up past the header (i.e. the Noor products are done).
+      var m = (hb + FADE - gb) / FADE;
+      m = m < 0 ? 0 : (m > 1 ? 1 : m);
+      brandNoor.style.opacity = String(1 - m);
+      brandAlt.style.opacity = String(m);
+      if (headerLogo) headerLogo.style.opacity = String(m);
+    }
+    function onScroll() {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(apply); }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    window.NOOR_HEADER_SYNC = apply; // re-run after the grid re-renders
+    apply();
+  })();
+
   /* ---------- boot ---------- */
-  renderGrid();
+  // Load the live catalogue from Supabase (falls back to the bundled array while
+  // you're still setting up, so the page never renders empty).
   updateCartUI();
   route(); // honour a legal-page hash on load (e.g. link from an e-mail)
+
+  function startWithProducts(list) {
+    PRODUCTS = (list && list.length) ? list : (window.NOOR_PRODUCTS || []);
+    visibleCount = PAGE_SIZE;
+    renderGrid();
+    updateCartUI();
+  }
+
+  if (window.NOOR_STORE && typeof window.NOOR_STORE.loadProducts === "function") {
+    window.NOOR_STORE.loadProducts().then(startWithProducts).catch(function () {
+      startWithProducts(window.NOOR_PRODUCTS || []);
+    });
+  } else {
+    startWithProducts(window.NOOR_PRODUCTS || []);
+  }
 })();
