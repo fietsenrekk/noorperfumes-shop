@@ -626,10 +626,15 @@
     function apply() {
       ticking = false;
       var hb = header.getBoundingClientRect().bottom;
-      var gb = grid.getBoundingClientRect().bottom;
-      // m: 0 while scrolling through Noor products, -> 1 as the grid bottom
-      // rises up past the header (i.e. the Noor products are done).
-      var m = (hb + FADE - gb) / FADE;
+      // Anchor the morph to the END OF THE REAL NOOR PHOTOS (the last product
+      // that has an actual image) — row 2 on desktop, row 4 on mobile — not the
+      // bottom of the whole 200-item catalogue.
+      var reals = grid.querySelectorAll(".product-photo.has-photo");
+      var refEl = reals.length ? reals[reals.length - 1].closest(".product-block") : null;
+      var rb = refEl ? refEl.getBoundingClientRect().bottom : grid.getBoundingClientRect().bottom;
+      // m: 0 while the real Noor products are still below the header, -> 1 as
+      // their last row rises up to just under the header.
+      var m = (hb + FADE - rb) / FADE;
       m = m < 0 ? 0 : (m > 1 ? 1 : m);
       brandNoor.style.opacity = String(1 - m);
       brandAlt.style.opacity = String(m);
