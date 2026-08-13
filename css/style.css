@@ -337,6 +337,7 @@ img,.ph{display:block;}
 /* --- meta bar (name + note pyramid + order) --- */
 .product-meta{
   display:flex;
+  flex:1;
   align-items:stretch;
   justify-content:space-between;
   gap:10px;
