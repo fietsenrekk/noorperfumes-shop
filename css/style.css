@@ -362,13 +362,12 @@ img,.ph{display:block;}
   line-height:1;
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
-  transition:transform 200ms ease-out, width 200ms ease-out, height 200ms ease-out, font-size 200ms ease-out;
+  transition:transform 200ms ease-out;
   z-index:10;
+  transform-origin:center center;
 }
 .product-block.info-open .swipe-close{
-  width:39px;
-  height:39px;
-  font-size:21px;
+  transform:scale(1.5);
 }
 .swipe-content{
   pointer-events:none;
