@@ -11,43 +11,43 @@
     {
       id: "memorable", name: "Memorable", ml: "30ml", price: 128,
       notes: "Red saffron, ambergris, praline",
-      photo: "assets/img/memorable.jpg",
+      photo: "assets/img/memorable.png",
       fact: "Ambergris is one of the rarest materials in perfumery — historically worth more than gold by weight. Here it anchors the praline sweetness so the scent lingers for hours."
     },
     {
       id: "citradelic", name: "Citradelic", ml: "30ml", price: 112,
       notes: "Bergamot, mint, blue iris",
-      photo: "assets/img/citradelic.jpg",
+      photo: "assets/img/citradelic.png",
       fact: "Nearly all of the world's bergamot grows on one narrow strip of Calabrian coastline in Italy — the reason citrus openings like this feel instantly Mediterranean."
     },
     {
       id: "velvet-sugar-rush", name: "Velvet Sugar Rush", ml: "30ml", price: 118,
       notes: "Caramel, raspberry, musk",
-      photo: "assets/img/velvet-sugar-rush.jpg",
+      photo: "assets/img/velvet-sugar-rush.png",
       fact: "Gourmand scents play with the brain's appetite centres — sweet notes are perceived as warmer and closer on skin than on paper, so this one is made to be worn, not sniffed."
     },
     {
       id: "amber-lait", name: "Amber Lait", ml: "30ml", price: 122,
       notes: "Amber, creamy wood, vanilla",
-      photo: "assets/img/amber-lait.jpg",
+      photo: "assets/img/amber-lait.png",
       fact: "“Amber” is not a single ingredient but an accord — traditionally labdanum, benzoin and vanilla — invented by perfumers to capture the warmth of fossilised resin."
     },
     {
       id: "oud-mirage", name: "Oud Mirage", ml: "30ml", price: 135,
       notes: "Oud, saffron, smoked honey",
-      photo: "assets/img/oud-mirage.jpg",
+      photo: "assets/img/oud-mirage.png",
       fact: "Oud forms when Aquilaria trees defend themselves against a fungus. Only a small fraction of wild trees ever produce it — which is why perfumers call it liquid gold."
     },
     {
       id: "luluat-al-oud", name: "Luluat Al Oud", ml: "55ml", price: 168,
       notes: "Oud, rose petal, oriental spices",
-      photo: "assets/img/luluat-al-oud.jpg",
+      photo: "assets/img/luluat-al-oud.png",
       fact: "“Luluat” means pearl in Arabic. Rose over oud is the signature pairing of Middle-Eastern perfumery, layered for centuries in traditional attar form."
     },
     {
       id: "century", name: "Century", ml: "100ml", price: 149,
       notes: "Black iris, leather, tobacco leaves",
-      photo: "assets/img/century.jpg",
+      photo: "assets/img/century.png",
       fact: "Iris (orris) butter takes up to six years from harvest to finished tincture, making it one of the slowest and most precious raw materials a perfumer can use."
     }
   ];

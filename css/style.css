@@ -992,7 +992,7 @@ form.checkout-form{
   .header-row:has(.header-logo.is-visible) .brand-morph{padding-right:118px;}
   form.checkout-form{grid-template-columns:1fr;}
   .toolbar{padding:12px 14px; gap:12px;}
-  .toolbar-right{min-width:0; flex:1 1 100%; gap:14px;}
+  .toolbar-right{min-width:0; flex:1 1 100%; gap:14px; justify-content:flex-end;}
   .toolbar-count{order:2; width:auto; flex-shrink:0;}
   .search-field{min-width:0; flex:1;}
   .site-footer{padding:36px 20px 32px;}
