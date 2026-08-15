@@ -34,6 +34,9 @@
   var pageOverlay = document.getElementById("pageOverlay");
   var pageBody = document.getElementById("pageBody");
   var pageScroll = document.getElementById("pageScroll");
+  var pageDrawerHandle = document.getElementById("pageDrawerHandle");
+  var pageBackdrop = document.getElementById("pageBackdrop");
+  var savedScrollPosition = 0;
 
   function fmt(n) { return "€" + n; }
 
@@ -218,10 +221,13 @@
         "</div>" +
         '<div class="info-swipe" aria-hidden="true">' +
           '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
-          '<div class="swipe-name">' + esc(p.name) + "</div>" +
-          '<div class="swipe-notes">' + fullNoteLines + "</div>" +
-          '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
-          '<div class="swipe-price">' + fmt(p.price) + "</div>" +
+          '<div class="swipe-content">' +
+            '<div class="swipe-name">' + esc(p.name) + "</div>" +
+            '<div class="swipe-notes">' + fullNoteLines + "</div>" +
+            '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
+            '<div class="swipe-price">' + fmt(p.price) + "</div>" +
+          "</div>" +
+          '<div class="swipe-dismiss"></div>' +
         "</div>";
 
       grid.appendChild(block);
@@ -236,7 +242,9 @@
     var order = e.target.closest(".order-btn[data-id]");
     if (order) { e.stopPropagation(); handleBuy(order); return; }
     var close = e.target.closest(".swipe-close");
-    if (close) { setInfo(close.closest(".product-block"), false); return; }
+    if (close) { e.stopPropagation(); setInfo(close.closest(".product-block"), false); return; }
+    var dismiss = e.target.closest(".swipe-dismiss");
+    if (dismiss) { setInfo(dismiss.closest(".product-block"), false); return; }
     var meta = e.target.closest(".product-meta");
     if (meta) { toggleInfo(meta.closest(".product-block")); }
   });
@@ -606,11 +614,14 @@
   function openPage(key) {
     var page = PAGES[key];
     if (!page) return;
+    savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
     pageBody.innerHTML =
       (page.kicker ? '<div class="page-kicker">' + page.kicker + "</div>" : "") +
       '<h1 id="pageTitleAnchor" tabindex="-1">' + page.title + "</h1>" +
       page.html;
     pageOverlay.classList.add("open");
+    pageOverlay.setAttribute("aria-hidden", "false");
+    pageBackdrop.classList.add("show");
     pageScroll.scrollTop = 0;
     document.body.style.overflow = "hidden";
     closeDrawer();
@@ -620,7 +631,10 @@
 
   function closePage() {
     pageOverlay.classList.remove("open");
+    pageOverlay.setAttribute("aria-hidden", "true");
+    pageBackdrop.classList.remove("show");
     if (!cartDrawer.classList.contains("open")) document.body.style.overflow = "";
+    window.scrollTo(0, savedScrollPosition);
   }
 
   function route() {
@@ -643,6 +657,57 @@
       closePage();
     }
   });
+
+  pageBackdrop.addEventListener("click", function () {
+    if (location.hash) {
+      location.hash = "";
+    } else {
+      closePage();
+    }
+  });
+
+  // Drag the page drawer handle down to close
+  (function () {
+    var startY = null;
+    var currentY = 0;
+    function onStart(e) {
+      startY = (e.touches ? e.touches[0].clientY : e.clientY);
+      pageOverlay.style.transition = "none";
+    }
+    function onMove(e) {
+      if (startY === null) return;
+      var y = (e.touches ? e.touches[0].clientY : e.clientY);
+      currentY = Math.max(0, y - startY);
+      pageOverlay.style.transform = "translateY(" + currentY + "px)";
+    }
+    function onEnd() {
+      if (startY === null) return;
+      pageOverlay.style.transition = "";
+      pageOverlay.style.transform = "";
+      if (currentY > 90) { 
+        if (location.hash) {
+          location.hash = "";
+        } else {
+          closePage();
+        }
+      }
+      startY = null;
+      currentY = 0;
+    }
+    pageDrawerHandle.addEventListener("touchstart", onStart, { passive: true });
+    pageDrawerHandle.addEventListener("touchmove", onMove, { passive: true });
+    pageDrawerHandle.addEventListener("touchend", onEnd);
+    pageDrawerHandle.addEventListener("mousedown", onStart);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onEnd);
+    pageDrawerHandle.addEventListener("click", function () {
+      if (location.hash) {
+        location.hash = "";
+      } else {
+        closePage();
+      }
+    });
+  })();
 
   /* Escape closes whatever is on top */
   document.addEventListener("keydown", function (e) {
