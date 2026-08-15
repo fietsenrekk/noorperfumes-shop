@@ -306,18 +306,12 @@ img,.ph{display:block;}
 }
 .clickable-hint{
   position:absolute;
-  top:10px; left:10px;
-  background:rgba(255,255,255,0.85);
-  color:var(--muted);
-  font-size:14px;
-  font-weight:500;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  padding:6px 10px;
-  border-radius:4px;
+  top:8px; left:8px;
+  width:8px; height:8px;
+  background:#4CAF50;
+  border-radius:50%;
   pointer-events:none;
   z-index:2;
-  line-height:1;
 }
 
 /* --- swipe-up info panel (covers the whole block when meta is clicked) --- */
@@ -395,22 +389,23 @@ img,.ph{display:block;}
 .product-meta{
   display:flex;
   flex:1;
-  align-items:flex-end;
+  align-items:center;
   justify-content:space-between;
   gap:10px;
   padding:12px 12px 12px 14px;
   cursor:pointer;
   min-height:98px;
+  position:relative;
 }
-.meta-text{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-end;}
-.meta-notes{margin-bottom:0; margin-top:-1.5px;}
+.meta-text{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;}
+.meta-notes{margin-bottom:0; margin-top:4px;}
 .meta-name{
   font-family:'Stardom', Georgia, 'Times New Roman', serif;
   font-size:clamp(1.05rem,1.7vw,1.5rem);
   line-height:1;
   letter-spacing:0.005em;
   text-transform:none;
-  margin-bottom:4px;
+  margin-bottom:8px;
   -webkit-text-stroke:0.45px currentColor;
   paint-order:stroke fill;
 }
@@ -451,7 +446,7 @@ img,.ph{display:block;}
   100%{background:var(--ink);}
 }
 @media (min-width:900px){
-  .product-meta{min-height:108px; align-items:flex-end;}
+  .product-meta{min-height:108px; align-items:center;}
   .product-meta .order-btn{width:72px;}
 }
 
@@ -914,7 +909,7 @@ form.checkout-form{
 .page-overlay{
   position:fixed;
   left:0; right:0; bottom:0;
-  top:var(--header-h);
+  top:0;
   z-index:100;
   background:var(--paper);
   display:flex;
@@ -1086,12 +1081,12 @@ form.checkout-form{
   .drawer-scroll{padding:0 18px 42px;}
   .page-topbar{padding:14px 16px;}
   .page-body{padding:38px 20px 70px;}
-  .product-meta{min-height:96px; padding:10px 10px 10px 12px;}
+  .product-meta{min-height:96px; padding:10px 10px 10px 12px; align-items:center;}
   .product-meta .order-btn{width:54px;}
   .pay-btn{width:100%; padding:18px 30px;}
   .load-more-btn{width:100px; height:100px; font-size:10px;}
-  .page-overlay{top:var(--header-h);}
-  .meta-notes{margin-bottom:0; margin-top:-1.5px;}
+  .page-overlay{top:0;}
+  .meta-notes{margin-bottom:0; margin-top:4px;}
   .note-line{line-height:1.1;}
 }
 /* focus visibility */

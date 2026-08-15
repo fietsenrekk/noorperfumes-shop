@@ -208,16 +208,16 @@
 
       // Add clickable hint only to the first product
       var clickableHint = (index === 0) 
-        ? '<div class="clickable-hint">^^</div>' 
+        ? '<div class="clickable-hint"></div>' 
         : '';
 
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
-          clickableHint +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
           'aria-label="More about ' + esc(p.name) + '">' +
+          clickableHint +
           '<div class="meta-text">' +
             '<div class="meta-name">' + esc(p.name) + "</div>" +
             '<div class="meta-notes">' + shortNoteLines + "</div>" +
@@ -617,9 +617,12 @@
     }
   };
 
+  var savedScrollPosition = 0;
+
   function openPage(key) {
     var page = PAGES[key];
     if (!page) return;
+    savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
     pageBody.innerHTML =
       (page.kicker ? '<div class="page-kicker">' + page.kicker + "</div>" : "") +
       '<h1 id="pageTitleAnchor" tabindex="-1">' + page.title + "</h1>" +
@@ -639,6 +642,7 @@
     pageOverlay.setAttribute("aria-hidden", "true");
     pageBackdrop.classList.remove("show");
     if (!cartDrawer.classList.contains("open")) document.body.style.overflow = "";
+    window.scrollTo(0, savedScrollPosition);
   }
 
   function route() {
