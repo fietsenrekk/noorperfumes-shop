@@ -208,15 +208,16 @@
         '<div class="note-line">&bull; ' + esc(py.base) + "</div>";
 
       var perfumeNumber = idx + 1;
+      var cleanName = p.name.replace(/\s*No\.\d+$/i, '');
 
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
-          'aria-label="More about ' + esc(p.name) + '">' +
+          'aria-label="More about ' + esc(cleanName) + '">' +
           '<div class="meta-text">' +
-            '<div class="meta-name">' + esc(p.name) + ' No.' + perfumeNumber + "</div>" +
+            '<div class="meta-name">' + esc(cleanName) + ' No.' + perfumeNumber + "</div>" +
             '<div class="meta-notes">' + shortNoteLines + "</div>" +
           "</div>" +
           '<button class="order-btn" data-id="' + p.id + '">Order</button>' +
@@ -224,7 +225,7 @@
         '<div class="info-swipe" aria-hidden="true">' +
           '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
           '<div class="swipe-content">' +
-            '<div class="swipe-name">' + esc(p.name) + "</div>" +
+            '<div class="swipe-name">' + esc(cleanName) + ' No.' + perfumeNumber + "</div>" +
             '<div class="swipe-notes">' + fullNoteLines + "</div>" +
             '<p class="swipe-desc">' + esc(cleanText(p.fact)) + "</p>" +
             '<div class="swipe-price">' + fmt(p.price) + "</div>" +
