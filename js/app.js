@@ -212,11 +212,11 @@
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
-          '<span class="product-number">No.' + perfumeNumber + '</span>' +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
           'aria-label="More about ' + esc(p.name) + '">' +
           '<div class="meta-text">' +
+            '<span class="product-number">No.' + perfumeNumber + '</span>' +
             '<div class="meta-name">' + esc(p.name) + "</div>" +
             '<div class="meta-notes">' + shortNoteLines + "</div>" +
           "</div>" +
