@@ -226,7 +226,6 @@
               '<div class="waitlist-panel" aria-hidden="true">' +
                 '<input type="email" class="waitlist-input" placeholder="Email address" ' +
                   'autocomplete="email" aria-label="Email address for the ' + esc(cleanName) + ' waitlist">' +
-                '<button type="button" class="waitlist-submit" data-waitlist-submit="' + p.id + '">OK</button>' +
               "</div>"
             : '<button class="order-btn" data-id="' + p.id + '">Order</button>') +
         "</div>" +
@@ -253,9 +252,16 @@
     var order = e.target.closest(".order-btn[data-id]");
     if (order) { e.stopPropagation(); handleBuy(order); return; }
     var waitBtn = e.target.closest("[data-waitlist]");
-    if (waitBtn) { e.stopPropagation(); toggleWaitlist(waitBtn); return; }
-    var waitSubmit = e.target.closest("[data-waitlist-submit]");
-    if (waitSubmit) { e.stopPropagation(); submitWaitlist(waitSubmit); return; }
+    if (waitBtn) {
+      e.stopPropagation();
+      // Once open, the same button is the OK / submit control.
+      if (waitBtn.closest(".product-meta").classList.contains("waitlist-open")) {
+        submitWaitlist(waitBtn);
+      } else {
+        toggleWaitlist(waitBtn);
+      }
+      return;
+    }
     // clicks inside the panel must not toggle the info swipe
     if (e.target.closest(".waitlist-panel")) { e.stopPropagation(); return; }
     var close = e.target.closest(".swipe-close");
@@ -324,32 +330,41 @@
   /* ---------- waitlist (sold-out products) ---------- */
   var WAITLIST_KEY = "noor-waitlist";
 
+  var WAITLIST_LABEL = "Join<br>Waitlist";
+
+  function closeWaitlist(meta) {
+    if (!meta) return;
+    meta.classList.remove("waitlist-open");
+    var b = meta.querySelector("[data-waitlist]");
+    var p = meta.querySelector(".waitlist-panel");
+    if (b) {
+      b.setAttribute("aria-expanded", "false");
+      b.innerHTML = WAITLIST_LABEL;
+    }
+    if (p) p.setAttribute("aria-hidden", "true");
+  }
+
   function toggleWaitlist(btn) {
     var meta = btn.closest(".product-meta");
     if (!meta) return;
-    var willOpen = !meta.classList.contains("waitlist-open");
     // only one panel open at a time
-    grid.querySelectorAll(".product-meta.waitlist-open").forEach(function (m) {
-      m.classList.remove("waitlist-open");
-      var b = m.querySelector("[data-waitlist]");
-      var p = m.querySelector(".waitlist-panel");
-      if (b) b.setAttribute("aria-expanded", "false");
-      if (p) p.setAttribute("aria-hidden", "true");
-    });
-    if (!willOpen) return;
+    grid.querySelectorAll(".product-meta.waitlist-open").forEach(closeWaitlist);
+
     meta.classList.add("waitlist-open");
     btn.setAttribute("aria-expanded", "true");
+    btn.innerHTML = "OK";           // the button itself becomes the submit control
     var panel = meta.querySelector(".waitlist-panel");
     if (panel) {
       panel.setAttribute("aria-hidden", "false");
       var input = panel.querySelector(".waitlist-input");
-      if (input) setTimeout(function () { input.focus(); }, 60);
+      if (input) setTimeout(function () { input.focus(); }, 80);
     }
   }
 
   function submitWaitlist(btn) {
-    var id = btn.getAttribute("data-waitlist-submit");
-    var panel = btn.closest(".waitlist-panel");
+    var id = btn.getAttribute("data-waitlist");
+    var meta = btn.closest(".product-meta");
+    var panel = meta && meta.querySelector(".waitlist-panel");
     var input = panel && panel.querySelector(".waitlist-input");
     if (!input) return;
     var email = input.value.trim();
@@ -364,8 +379,15 @@
       list[id] = email;
       localStorage.setItem(WAITLIST_KEY, JSON.stringify(list));
     } catch (e) { /* private mode: still confirm to the customer */ }
-    panel.classList.add("done");
     panel.innerHTML = '<div class="waitlist-done">You are on the list.</div>';
+    setTimeout(function () {
+      closeWaitlist(meta);
+      // restore the field for a future signup once the panel has slid away
+      setTimeout(function () {
+        panel.innerHTML =
+          '<input type="email" class="waitlist-input" placeholder="Email address" autocomplete="email">';
+      }, 300);
+    }, 1800);
   }
 
   /* Enter submits the waitlist input */
@@ -375,8 +397,8 @@
     if (!input) return;
     e.preventDefault();
     e.stopPropagation();
-    var submit = input.parentNode.querySelector("[data-waitlist-submit]");
-    if (submit) submitWaitlist(submit);
+    var btn = input.closest(".product-meta").querySelector("[data-waitlist]");
+    if (btn) submitWaitlist(btn);
   });
 
   /* ---------- cart ---------- */
