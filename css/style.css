@@ -304,6 +304,19 @@ img,.ph{display:block;}
     repeating-linear-gradient(135deg, rgba(176,141,87,0.14) 0 1px, transparent 1px 26px);
   pointer-events:none;
 }
+.product-number{
+  position:absolute;
+  bottom:10px;
+  left:12px;
+  z-index:3;
+  font-family:'Archivo', sans-serif;
+  font-weight:400;
+  font-size:10px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:rgba(247,245,240,0.85);
+  pointer-events:none;
+}
 
 /* --- swipe-up info panel (covers the whole block when meta is clicked) --- */
 .info-swipe{

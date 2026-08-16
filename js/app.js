@@ -186,7 +186,7 @@
 
     var toShow = filtered.slice(0, visibleCount);
 
-    toShow.forEach(function (p) {
+    toShow.forEach(function (p, idx) {
       var block = document.createElement("div");
       block.className = "product-block";
       block.setAttribute("data-id", p.id);
@@ -207,9 +207,12 @@
         '<div class="note-line">&bull; ' + esc(py.heart) + "</div>" +
         '<div class="note-line">&bull; ' + esc(py.base) + "</div>";
 
+      var perfumeNumber = idx + 1;
+
       block.innerHTML =
         '<div class="' + photoClass + '">' +
           photoInner +
+          '<span class="product-number">No.' + perfumeNumber + '</span>' +
         "</div>" +
         '<div class="product-meta" role="button" tabindex="0" aria-expanded="false" ' +
           'aria-label="More about ' + esc(p.name) + '">' +
