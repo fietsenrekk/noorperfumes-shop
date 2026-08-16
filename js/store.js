@@ -26,7 +26,9 @@ window.NOOR_STORE = (function () {
       priceCents: r.price_cents || 0,
       photo: r.image_path || "",
       initial: (r.name || "?").slice(0, 2).toUpperCase(),
-      available: r.available !== false
+      available: r.available !== false,
+      // Out-of-stock products stay in the grid so customers can join the waitlist.
+      soldOut: r.available === false
     };
   }
 
@@ -38,7 +40,8 @@ window.NOOR_STORE = (function () {
     return client
       .from("products")
       .select("id,name,volume,notes,fun_fact,price_cents,image_path,available,sort_order")
-      .eq("available", true)
+      // No availability filter: sold-out items still render, with a waitlist
+      // button instead of an order button.
       .order("sort_order", { ascending: true })
       .then(function (res) {
         if (res.error || !res.data || !res.data.length) {

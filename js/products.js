@@ -21,7 +21,7 @@
       fact: "Nearly all of the world's bergamot grows on one narrow strip of Calabrian coastline in Italy — the reason citrus openings like this feel instantly Mediterranean."
     },
     {
-      id: "velvet-sugar-rush", name: "Velvet Sugar Rush", ml: "30ml", price: 118,
+      id: "velvet-sugar-rush", name: "Velvet Sugar Rush", ml: "30ml", price: 118, soldOut: true,
       notes: "Caramel, raspberry, musk",
       photo: "assets/img/velvet-sugar-rush.png",
       fact: "Gourmand scents play with the brain's appetite centres — sweet notes are perceived as warmer and closer on skin than on paper, so this one is made to be worn, not sniffed."

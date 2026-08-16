@@ -220,7 +220,15 @@
             '<div class="meta-name">' + esc(cleanName) + ' No.' + perfumeNumber + "</div>" +
             '<div class="meta-notes">' + shortNoteLines + "</div>" +
           "</div>" +
-          '<button class="order-btn" data-id="' + p.id + '">Order</button>' +
+          (p.soldOut
+            ? '<button class="order-btn waitlist-btn" data-waitlist="' + p.id + '" ' +
+                'aria-expanded="false">Join<br>Waitlist</button>' +
+              '<div class="waitlist-panel" aria-hidden="true">' +
+                '<input type="email" class="waitlist-input" placeholder="Email address" ' +
+                  'autocomplete="email" aria-label="Email address for the ' + esc(cleanName) + ' waitlist">' +
+                '<button type="button" class="waitlist-submit" data-waitlist-submit="' + p.id + '">OK</button>' +
+              "</div>"
+            : '<button class="order-btn" data-id="' + p.id + '">Order</button>') +
         "</div>" +
         '<div class="info-swipe" aria-hidden="true">' +
           '<button class="swipe-close" type="button" aria-label="Close">×</button>' +
@@ -244,6 +252,12 @@
   grid.addEventListener("click", function (e) {
     var order = e.target.closest(".order-btn[data-id]");
     if (order) { e.stopPropagation(); handleBuy(order); return; }
+    var waitBtn = e.target.closest("[data-waitlist]");
+    if (waitBtn) { e.stopPropagation(); toggleWaitlist(waitBtn); return; }
+    var waitSubmit = e.target.closest("[data-waitlist-submit]");
+    if (waitSubmit) { e.stopPropagation(); submitWaitlist(waitSubmit); return; }
+    // clicks inside the panel must not toggle the info swipe
+    if (e.target.closest(".waitlist-panel")) { e.stopPropagation(); return; }
     var close = e.target.closest(".swipe-close");
     if (close) { e.stopPropagation(); setInfo(close.closest(".product-block"), false); return; }
     var dismiss = e.target.closest(".swipe-dismiss");
@@ -306,6 +320,64 @@
     saveCart();
     updateCartUI();
   }
+
+  /* ---------- waitlist (sold-out products) ---------- */
+  var WAITLIST_KEY = "noor-waitlist";
+
+  function toggleWaitlist(btn) {
+    var meta = btn.closest(".product-meta");
+    if (!meta) return;
+    var willOpen = !meta.classList.contains("waitlist-open");
+    // only one panel open at a time
+    grid.querySelectorAll(".product-meta.waitlist-open").forEach(function (m) {
+      m.classList.remove("waitlist-open");
+      var b = m.querySelector("[data-waitlist]");
+      var p = m.querySelector(".waitlist-panel");
+      if (b) b.setAttribute("aria-expanded", "false");
+      if (p) p.setAttribute("aria-hidden", "true");
+    });
+    if (!willOpen) return;
+    meta.classList.add("waitlist-open");
+    btn.setAttribute("aria-expanded", "true");
+    var panel = meta.querySelector(".waitlist-panel");
+    if (panel) {
+      panel.setAttribute("aria-hidden", "false");
+      var input = panel.querySelector(".waitlist-input");
+      if (input) setTimeout(function () { input.focus(); }, 60);
+    }
+  }
+
+  function submitWaitlist(btn) {
+    var id = btn.getAttribute("data-waitlist-submit");
+    var panel = btn.closest(".waitlist-panel");
+    var input = panel && panel.querySelector(".waitlist-input");
+    if (!input) return;
+    var email = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      input.classList.add("invalid");
+      input.focus();
+      return;
+    }
+    input.classList.remove("invalid");
+    try {
+      var list = JSON.parse(localStorage.getItem(WAITLIST_KEY) || "{}");
+      list[id] = email;
+      localStorage.setItem(WAITLIST_KEY, JSON.stringify(list));
+    } catch (e) { /* private mode: still confirm to the customer */ }
+    panel.classList.add("done");
+    panel.innerHTML = '<div class="waitlist-done">You are on the list.</div>';
+  }
+
+  /* Enter submits the waitlist input */
+  grid.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var input = e.target.closest(".waitlist-input");
+    if (!input) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var submit = input.parentNode.querySelector("[data-waitlist-submit]");
+    if (submit) submitWaitlist(submit);
+  });
 
   /* ---------- cart ---------- */
   function totalCount() {
